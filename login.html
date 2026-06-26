@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AttendQR – IESTP Antenor Orrego Espinoza</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@700;800&display=swap');
+  :root{
+    --primary:#1a3c6e;
+    --accent:#e8a020;
+    --light-bg:#f0f4fa;
+    --card-bg:#ffffff;
+    --text-dark:#1a2540;
+    --text-muted:#6b7a99;
+    --success:#28a745;
+    --danger:#dc3545;
+    --border:#dde3f0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Inter',sans-serif;background:var(--light-bg);min-height:100vh;display:flex;flex-direction:column;}
+
+  /* HEADER */
+  .site-header{background:var(--primary);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(0,0,0,.25);}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand-icon{width:46px;height:46px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;}
+  .brand-text h1{font-family:'Poppins',sans-serif;font-size:1.15rem;color:#fff;margin:0;line-height:1.1;}
+  .brand-text p{font-size:.7rem;color:rgba(255,255,255,.65);margin:0;}
+  .header-clock{color:rgba(255,255,255,.9);font-size:.85rem;font-weight:500;text-align:right;line-height:1.4;}
+  .header-clock .time{font-size:1.4rem;font-weight:700;color:var(--accent);}
+
+  /* HERO STRIP */
+  .hero-strip{background:linear-gradient(135deg,#1a3c6e 0%,#2563b0 60%,#1a3c6e 100%);padding:38px 20px 100px;text-align:center;position:relative;overflow:hidden;}
+  .hero-strip::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");}
+  .hero-strip h2{font-family:'Poppins',sans-serif;color:#fff;font-size:1.7rem;font-weight:800;position:relative;}
+  .hero-strip p{color:rgba(255,255,255,.75);font-size:.9rem;margin-top:6px;position:relative;}
+
+  /* MAIN CARD AREA */
+  .main-area{margin-top:-70px;padding:0 16px 40px;position:relative;z-index:10;}
+
+  /* TABS */
+  .auth-card{background:var(--card-bg);border-radius:18px;box-shadow:0 8px 40px rgba(26,60,110,.13);overflow:hidden;max-width:520px;margin:0 auto;}
+  .auth-tabs{display:flex;background:#f4f7fb;border-bottom:2px solid var(--border);}
+  .auth-tab-btn{flex:1;padding:14px;background:none;border:none;font-size:.85rem;font-weight:600;color:var(--text-muted);cursor:pointer;transition:all .25s;position:relative;}
+  .auth-tab-btn.active{color:var(--primary);background:#fff;}
+  .auth-tab-btn.active::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;background:var(--accent);}
+  .auth-tab-btn i{display:block;font-size:1.3rem;margin-bottom:3px;}
+
+  /* PANELS */
+  .tab-panel{display:none;padding:28px 32px 32px;}
+  .tab-panel.active{display:block;}
+  .form-label{font-size:.8rem;font-weight:600;color:var(--text-dark);margin-bottom:4px;}
+  .form-control,.form-select{border:1.5px solid var(--border);border-radius:9px;padding:10px 14px;font-size:.88rem;transition:border-color .2s;}
+  .form-control:focus,.form-select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,60,110,.1);outline:none;}
+  .btn-main{background:linear-gradient(135deg,var(--primary),#2563b0);color:#fff;border:none;border-radius:10px;padding:12px;font-weight:700;font-size:.95rem;width:100%;cursor:pointer;transition:transform .15s,box-shadow .15s;}
+  .btn-main:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(26,60,110,.35);}
+  .btn-accent{background:linear-gradient(135deg,var(--accent),#f0b840);color:#fff;border:none;border-radius:10px;padding:12px;font-weight:700;font-size:.95rem;width:100%;cursor:pointer;transition:transform .15s,box-shadow .15s;}
+  .btn-accent:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(232,160,32,.4);}
+  .divider{display:flex;align-items:center;gap:10px;margin:18px 0;color:var(--text-muted);font-size:.78rem;}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+  .link-toggle{color:var(--primary);font-size:.82rem;font-weight:600;cursor:pointer;text-decoration:underline;}
+  .section-title{font-family:'Poppins',sans-serif;font-size:1.1rem;font-weight:700;color:var(--primary);margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+  .badge-role{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600;}
+  .badge-student{background:#e0f0ff;color:#1a3c6e;}
+  .badge-teacher{background:#fff3dc;color:#a06500;}
+  .alert-custom{border-radius:10px;font-size:.83rem;padding:10px 14px;margin-bottom:14px;display:none;}
+  .alert-success-custom{background:#d4edda;color:#155724;border:1px solid #c3e6cb;}
+  .alert-danger-custom{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;}
+
+  /* FOOTER */
+  .site-footer{background:var(--primary);color:rgba(255,255,255,.6);text-align:center;padding:14px;font-size:.75rem;margin-top:auto;}
+  .site-footer span{color:var(--accent);}
+  .password-toggle{position:relative;}
+  .password-toggle .toggle-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text-muted);font-size:1rem;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="brand">
+    <div class="brand-icon"><i class="bi bi-qr-code"></i></div>
+    <div class="brand-text">
+      <h1>AttendQR</h1>
+      <p>IESTP Antenor Orrego Espinoza</p>
+    </div>
+  </div>
+  <div class="header-clock">
+    <div class="time" id="clock">--:--:--</div>
+    <div id="date-display">Cargando...</div>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero-strip">
+  <h2><i class="bi bi-shield-check me-2"></i>Sistema de Asistencia</h2>
+  <p>Ingresa o regístrate para continuar</p>
+</div>
+
+<!-- MAIN -->
+<div class="main-area">
+  <div class="auth-card">
+    <!-- TABS -->
+    <div class="auth-tabs">
+      <button class="auth-tab-btn active" onclick="switchTab('login')">
+        <i class="bi bi-box-arrow-in-right"></i>Iniciar Sesión
+      </button>
+      <button class="auth-tab-btn" onclick="switchTab('reg-student')">
+        <i class="bi bi-person-plus"></i>Reg. Alumno
+      </button>
+      <button class="auth-tab-btn" onclick="switchTab('reg-teacher')">
+        <i class="bi bi-person-badge"></i>Reg. Docente
+      </button>
+    </div>
+
+    <!-- ===== LOGIN PANEL ===== -->
+    <div class="tab-panel active" id="panel-login">
+      <div class="section-title"><i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión</div>
+      <div class="alert-custom alert-danger-custom" id="login-error"><i class="bi bi-exclamation-circle me-1"></i><span id="login-error-msg"></span></div>
+      <div class="alert-custom alert-success-custom" id="login-success"><i class="bi bi-check-circle me-1"></i>Iniciando sesión...</div>
+      <div class="mb-3">
+        <label class="form-label">Correo electrónico</label>
+        <input type="email" class="form-control" id="login-email" placeholder="correo@ejemplo.com"/>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Contraseña</label>
+        <div class="password-toggle">
+          <input type="password" class="form-control" id="login-pass" placeholder="••••••••"/>
+          <i class="bi bi-eye toggle-eye" onclick="togglePass('login-pass',this)"></i>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Ingresar como</label>
+        <select class="form-select" id="login-role">
+          <option value="student">👨‍🎓 Alumno</option>
+          <option value="teacher">👩‍🏫 Docente</option>
+        </select>
+      </div>
+      <button class="btn-main mt-2" onclick="doLogin()"><i class="bi bi-box-arrow-in-right me-2"></i>Ingresar</button>
+      <div class="divider">¿No tienes cuenta?</div>
+      <div class="text-center">
+        <span class="link-toggle" onclick="switchTab('reg-student')">Registrar Alumno</span>
+        &nbsp;·&nbsp;
+        <span class="link-toggle" onclick="switchTab('reg-teacher')">Registrar Docente</span>
+      </div>
+    </div>
+
+    <!-- ===== REGISTRO ALUMNO ===== -->
+    <div class="tab-panel" id="panel-reg-student">
+      <div class="section-title"><i class="bi bi-person-plus"></i> Registro de Alumno <span class="badge-role badge-student ms-2">EST</span></div>
+      <div class="alert-custom alert-danger-custom" id="stu-error"><i class="bi bi-exclamation-circle me-1"></i><span id="stu-error-msg"></span></div>
+      <div class="alert-custom alert-success-custom" id="stu-success"><i class="bi bi-check-circle me-1"></i>¡Registro exitoso! Ya puedes iniciar sesión.</div>
+      <div class="mb-3">
+        <label class="form-label">Código de Alumno</label>
+        <select class="form-select" id="stu-code">
+          <option value="">— Selecciona tu código —</option>
+        </select>
+        <div class="form-text text-muted mt-1" style="font-size:.75rem;">Tu código fue asignado por el instituto (EST-1, EST-2...)</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Nombre completo</label>
+        <input type="text" class="form-control" id="stu-name" placeholder="Apellidos y Nombres" readonly/>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Correo electrónico</label>
+        <input type="email" class="form-control" id="stu-email" placeholder="correo@ejemplo.com"/>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Contraseña</label>
+        <div class="password-toggle">
+          <input type="password" class="form-control" id="stu-pass" placeholder="Mínimo 6 caracteres"/>
+          <i class="bi bi-eye toggle-eye" onclick="togglePass('stu-pass',this)"></i>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Confirmar contraseña</label>
+        <div class="password-toggle">
+          <input type="password" class="form-control" id="stu-pass2" placeholder="Repite la contraseña"/>
+          <i class="bi bi-eye toggle-eye" onclick="togglePass('stu-pass2',this)"></i>
+        </div>
+      </div>
+      <button class="btn-accent" onclick="registerStudent()"><i class="bi bi-person-check me-2"></i>Registrarme como Alumno</button>
+      <div class="divider">¿Ya tienes cuenta?</div>
+      <div class="text-center"><span class="link-toggle" onclick="switchTab('login')">Iniciar Sesión</span></div>
+    </div>
+
+    <!-- ===== REGISTRO DOCENTE ===== -->
+    <div class="tab-panel" id="panel-reg-teacher">
+      <div class="section-title"><i class="bi bi-person-badge"></i> Registro de Docente <span class="badge-role badge-teacher ms-2">DOC</span></div>
+      <div class="alert-custom alert-danger-custom" id="tch-error"><i class="bi bi-exclamation-circle me-1"></i><span id="tch-error-msg"></span></div>
+      <div class="alert-custom alert-success-custom" id="tch-success"><i class="bi bi-check-circle me-1"></i>¡Registro exitoso! Ya puedes iniciar sesión.</div>
+      <div class="mb-3">
+        <label class="form-label">Nombre completo</label>
+        <input type="text" class="form-control" id="tch-name" placeholder="Apellidos y Nombres"/>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Especialidad / Área</label>
+        <input type="text" class="form-control" id="tch-area" placeholder="Ej: Computación e Informática"/>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Correo electrónico</label>
+        <input type="email" class="form-control" id="tch-email" placeholder="correo@ejemplo.com"/>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Código Docente (asignado por el instituto)</label>
+        <input type="text" class="form-control" id="tch-code" placeholder="Ej: DOC-01"/>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Contraseña</label>
+        <div class="password-toggle">
+          <input type="password" class="form-control" id="tch-pass" placeholder="Mínimo 6 caracteres"/>
+          <i class="bi bi-eye toggle-eye" onclick="togglePass('tch-pass',this)"></i>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Confirmar contraseña</label>
+        <div class="password-toggle">
+          <input type="password" class="form-control" id="tch-pass2" placeholder="Repite la contraseña"/>
+          <i class="bi bi-eye toggle-eye" onclick="togglePass('tch-pass2',this)"></i>
+        </div>
+      </div>
+      <button class="btn-main" onclick="registerTeacher()"><i class="bi bi-person-check me-2"></i>Registrarme como Docente</button>
+      <div class="divider">¿Ya tienes cuenta?</div>
+      <div class="text-center"><span class="link-toggle" onclick="switchTab('login')">Iniciar Sesión</span></div>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">© 2026 AttendQR — <span>IESTP Antenor Orrego Espinoza</span>. Todos los derechos reservados.
+</footer>
+
+<script>
+// ===== STUDENTS LIST =====
+const STUDENTS = [
+  {code:'EST-1', name:'BELLO MARTINEZ, SHEILA MILAGROS'},
+  {code:'EST-2', name:'BENAVIDES SALAS ANGELO RENZO'},
+  {code:'EST-3', name:'CACERES LUCERO, ADRIAN FERNANDO'},
+  {code:'EST-4', name:'CHICOMA CENTURION, GIANFRANCO SEBASTIAN'},
+  {code:'EST-5', name:'DEJO ZAMBRANO ALONSO EDUARDO OSHIRO'},
+  {code:'EST-6', name:'DELGADO HURTADO, JOSIAS CALEB'},
+  {code:'EST-7', name:'GAVILAN MEZA, ANTHONY JOEL'},
+  {code:'EST-8', name:'LOZANO MOLINA FABRIZIO RAHUL'},
+  {code:'EST-9', name:'PAUCAS PARIONA, AXEL DOMINIC'},
+  {code:'EST-10', name:'PUMA RAMIREZ, ANYI PERLA'},
+  {code:'EST-11', name:'QUIQUE BLAS, ANGIE KATHERIN'},
+  {code:'EST-12', name:'QUISPE MIRANDA, ITALO BENJAMIN'},
+  {code:'EST-13', name:'SAIRITUPAC CONDORI, RUBI GERALDINE'},
+  {code:'EST-14', name:'SILUPU FERNANDEZ, OMAR ADRIANO'},
+  {code:'EST-15', name:'SOLER LEON, SEBASTIAN ALONZO'},
+  {code:'EST-16', name:'SUCASACA VERA, CHRISTIAM ALEJANDRO MATTHEW'},
+  {code:'EST-17', name:'UMILDE JUARES, WILLIAN'},
+  {code:'EST-18', name:'UTRILLA VALQUI, URIEL ALEXANDER'},
+  {code:'EST-19', name:'VILLARREAL LAUREANO, ALVARO'},
+  {code:'EST-20', name:'ZARATE MORENO, LUIS ENRIQUE'}
+];
+
+// Populate student code select
+const sel = document.getElementById('stu-code');
+STUDENTS.forEach(s=>{
+  const opt = document.createElement('option');
+  opt.value = s.code;
+  opt.textContent = s.code + ' – ' + s.name;
+  sel.appendChild(opt);
+});
+sel.addEventListener('change', function(){
+  const found = STUDENTS.find(s=>s.code===this.value);
+  document.getElementById('stu-name').value = found ? found.name : '';
+});
+
+// ===== CLOCK =====
+function updateClock(){
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toLocaleTimeString('es-PE');
+  document.getElementById('date-display').textContent = now.toLocaleDateString('es-PE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+}
+updateClock(); setInterval(updateClock,1000);
+
+// ===== TAB SWITCH =====
+function switchTab(tab){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.auth-tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+  const idx = {login:0,'reg-student':1,'reg-teacher':2};
+  document.querySelectorAll('.auth-tab-btn')[idx[tab]].classList.add('active');
+  hideAllAlerts();
+}
+
+function hideAllAlerts(){
+  document.querySelectorAll('.alert-custom').forEach(a=>a.style.display='none');
+}
+
+// ===== PASSWORD TOGGLE =====
+function togglePass(id,icon){
+  const inp = document.getElementById(id);
+  if(inp.type==='password'){inp.type='text';icon.classList.replace('bi-eye','bi-eye-slash');}
+  else{inp.type='password';icon.classList.replace('bi-eye-slash','bi-eye');}
+}
+
+// ===== STORAGE HELPERS =====
+function getUsers(){ try{return JSON.parse(localStorage.getItem('attendqr_users')||'[]');}catch{return[];} }
+function saveUsers(u){ localStorage.setItem('attendqr_users', JSON.stringify(u)); }
+function showAlert(id,show=true){ document.getElementById(id).style.display = show?'flex':'none'; }
+function setErr(msgId, txt){ document.getElementById(msgId).textContent = txt; }
+
+// ===== REGISTER STUDENT =====
+function registerStudent(){
+  hideAllAlerts();
+  const code  = document.getElementById('stu-code').value.trim();
+  const name  = document.getElementById('stu-name').value.trim();
+  const email = document.getElementById('stu-email').value.trim();
+  const pass  = document.getElementById('stu-pass').value;
+  const pass2 = document.getElementById('stu-pass2').value;
+
+  if(!code){setErr('stu-error-msg','Selecciona tu código de alumno.');showAlert('stu-error');return;}
+  if(!email){setErr('stu-error-msg','Ingresa tu correo electrónico.');showAlert('stu-error');return;}
+  if(pass.length<6){setErr('stu-error-msg','La contraseña debe tener al menos 6 caracteres.');showAlert('stu-error');return;}
+  if(pass!==pass2){setErr('stu-error-msg','Las contraseñas no coinciden.');showAlert('stu-error');return;}
+
+  const users = getUsers();
+  if(users.find(u=>u.email===email)){setErr('stu-error-msg','Este correo ya está registrado.');showAlert('stu-error');return;}
+  if(users.find(u=>u.code===code)){setErr('stu-error-msg','Este código ya fue registrado por otro usuario.');showAlert('stu-error');return;}
+
+  users.push({role:'student',code,name,email,pass,registeredAt:new Date().toISOString()});
+  saveUsers(users);
+  showAlert('stu-success');
+  setTimeout(()=>{switchTab('login');document.getElementById('login-email').value=email;},2000);
+}
+
+// ===== REGISTER TEACHER =====
+function registerTeacher(){
+  hideAllAlerts();
+  const name  = document.getElementById('tch-name').value.trim();
+  const area  = document.getElementById('tch-area').value.trim();
+  const email = document.getElementById('tch-email').value.trim();
+  const code  = document.getElementById('tch-code').value.trim();
+  const pass  = document.getElementById('tch-pass').value;
+  const pass2 = document.getElementById('tch-pass2').value;
+
+  if(!name||!area||!email||!code){setErr('tch-error-msg','Completa todos los campos.');showAlert('tch-error');return;}
+  if(pass.length<6){setErr('tch-error-msg','La contraseña debe tener al menos 6 caracteres.');showAlert('tch-error');return;}
+  if(pass!==pass2){setErr('tch-error-msg','Las contraseñas no coinciden.');showAlert('tch-error');return;}
+
+  const users = getUsers();
+  if(users.find(u=>u.email===email)){setErr('tch-error-msg','Este correo ya está registrado.');showAlert('tch-error');return;}
+
+  users.push({role:'teacher',name,area,email,code,pass,registeredAt:new Date().toISOString()});
+  saveUsers(users);
+  showAlert('tch-success');
+  setTimeout(()=>{switchTab('login');document.getElementById('login-email').value=email;document.getElementById('login-role').value='teacher';},2000);
+}
+
+// ===== LOGIN =====
+function doLogin(){
+  hideAllAlerts();
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const role  = document.getElementById('login-role').value;
+
+  if(!email||!pass){setErr('login-error-msg','Ingresa tu correo y contraseña.');showAlert('login-error');return;}
+
+  const users = getUsers();
+  const user  = users.find(u=>u.email===email && u.pass===pass && u.role===role);
+  if(!user){setErr('login-error-msg','Credenciales incorrectas o rol equivocado.');showAlert('login-error');return;}
+
+  localStorage.setItem('attendqr_session', JSON.stringify(user));
+  showAlert('login-success');
+  setTimeout(()=>{ window.location.href = role==='teacher' ? 'docente.html' : 'alumno.html'; },1200);
+}
+
+// Check existing session
+const sess = JSON.parse(localStorage.getItem('attendqr_session')||'null');
+if(sess){ window.location.href = sess.role==='teacher'?'docente.html':'alumno.html'; }
+</script>
+</body>
+</html>

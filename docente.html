@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Panel Docente – AttendQR</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@700;800&display=swap');
+:root{
+  --primary:#1a3c6e;--accent:#e8a020;--light-bg:#f0f4fa;
+  --card:#fff;--border:#dde3f0;--text:#1a2540;--muted:#6b7a99;
+  --success:#198754;--warning:#e8a020;--danger:#dc3545;
+  --sidebar-w:240px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--light-bg);display:flex;min-height:100vh;}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);background:var(--primary);display:flex;flex-direction:column;min-height:100vh;position:fixed;top:0;left:0;z-index:100;}
+.sidebar-brand{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.12);}
+.sidebar-brand .logo-box{width:38px;height:38px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;margin-bottom:8px;}
+.sidebar-brand h2{font-family:'Poppins',sans-serif;color:#fff;font-size:.95rem;margin:0;}
+.sidebar-brand p{color:rgba(255,255,255,.55);font-size:.68rem;margin:0;}
+.sidebar-user{padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px;}
+.user-avatar{width:38px;height:38px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.9rem;}
+.user-info{flex:1;overflow:hidden;}
+.user-info .name{color:#fff;font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-info .role-badge{font-size:.65rem;color:rgba(255,255,255,.6);}
+.sidebar-nav{flex:1;padding:10px 10px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;color:rgba(255,255,255,.7);cursor:pointer;font-size:.82rem;font-weight:500;transition:all .2s;margin-bottom:2px;}
+.nav-item:hover,.nav-item.active{background:rgba(255,255,255,.12);color:#fff;}
+.nav-item.active{border-left:3px solid var(--accent);}
+.nav-item i{font-size:1.05rem;width:20px;text-align:center;}
+.nav-section{color:rgba(255,255,255,.35);font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:10px 12px 4px;margin-top:6px;}
+.sidebar-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,.1);}
+.btn-logout{display:flex;align-items:center;gap:8px;background:rgba(220,53,69,.15);color:#ff8a8a;border:none;border-radius:8px;padding:8px 12px;font-size:.8rem;cursor:pointer;width:100%;transition:background .2s;}
+.btn-logout:hover{background:rgba(220,53,69,.3);}
+
+/* MAIN */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar-title{font-family:'Poppins',sans-serif;font-size:1rem;font-weight:700;color:var(--primary);}
+.topbar-clock{text-align:right;}
+.topbar-clock .time{font-size:1.3rem;font-weight:700;color:var(--primary);}
+.topbar-clock .date-txt{font-size:.72rem;color:var(--muted);}
+.content{padding:24px;flex:1;}
+
+/* PAGE PANELS */
+.page{display:none;} .page.active{display:block;}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:0 2px 12px rgba(26,60,110,.06);}
+.card-title{font-family:'Poppins',sans-serif;font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;}
+.stat-card .num{font-family:'Poppins',sans-serif;font-size:2rem;font-weight:800;}
+.stat-card .lbl{font-size:.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
+.num-present{color:var(--success);}
+.num-late{color:var(--warning);}
+.num-absent{color:var(--danger);}
+.num-total{color:var(--primary);}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.83rem;}
+thead th{background:#f4f7fb;color:var(--primary);font-weight:700;padding:10px 12px;text-align:left;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid var(--border);}
+tbody td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tbody tr:hover{background:#fafbff;}
+.badge-present{background:#d4edda;color:#155724;border-radius:20px;padding:3px 10px;font-size:.72rem;font-weight:700;}
+.badge-late{background:#fff3cd;color:#856404;border-radius:20px;padding:3px 10px;font-size:.72rem;font-weight:700;}
+.badge-absent{background:#f8d7da;color:#721c24;border-radius:20px;padding:3px 10px;font-size:.72rem;font-weight:700;}
+.badge-pending{background:#e2e3e5;color:#383d41;border-radius:20px;padding:3px 10px;font-size:.72rem;font-weight:700;}
+
+/* QR BOX */
+.qr-box{display:flex;flex-direction:column;align-items:center;background:#f8faff;border:2px dashed var(--border);border-radius:14px;padding:28px;text-align:center;}
+.qr-placeholder{width:200px;height:200px;background:#e9eef8;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:3rem;color:var(--muted);margin-bottom:14px;}
+.timer-ring{font-size:2.5rem;font-weight:800;color:var(--primary);font-family:'Poppins',sans-serif;margin-top:8px;}
+.timer-label{font-size:.75rem;color:var(--muted);margin-top:2px;}
+.timer-ring.warning{color:var(--warning);}
+.timer-ring.danger{color:var(--danger);}
+
+/* FORM */
+.form-label{font-size:.8rem;font-weight:600;color:var(--text);margin-bottom:4px;}
+.form-control,.form-select{border:1.5px solid var(--border);border-radius:9px;padding:9px 13px;font-size:.85rem;transition:border-color .2s;}
+.form-control:focus,.form-select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,60,110,.1);outline:none;}
+.btn-primary-c{background:linear-gradient(135deg,var(--primary),#2563b0);color:#fff;border:none;border-radius:9px;padding:9px 18px;font-weight:600;font-size:.85rem;cursor:pointer;transition:transform .15s;}
+.btn-primary-c:hover{transform:translateY(-1px);}
+.btn-accent-c{background:linear-gradient(135deg,var(--accent),#f0b840);color:#fff;border:none;border-radius:9px;padding:9px 18px;font-weight:600;font-size:.85rem;cursor:pointer;transition:transform .15s;}
+.btn-accent-c:hover{transform:translateY(-1px);}
+.btn-outline-c{background:none;border:1.5px solid var(--border);color:var(--text);border-radius:9px;padding:8px 16px;font-weight:600;font-size:.83rem;cursor:pointer;transition:all .2s;}
+.btn-outline-c:hover{border-color:var(--primary);color:var(--primary);}
+.btn-sm-c{padding:5px 12px;font-size:.75rem;}
+.btn-success-c{background:linear-gradient(135deg,var(--success),#20b25a);color:#fff;border:none;border-radius:9px;padding:9px 18px;font-weight:600;font-size:.85rem;cursor:pointer;}
+
+.row-2col{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.row-3col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+
+/* SEARCH ROW */
+.search-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.search-input{flex:1;min-width:180px;border:1.5px solid var(--border);border-radius:9px;padding:8px 13px;font-size:.83rem;}
+.filter-select{border:1.5px solid var(--border);border-radius:9px;padding:8px 13px;font-size:.83rem;background:#fff;}
+
+/* TOAST */
+.toast-container{position:fixed;top:20px;right:20px;z-index:9999;}
+.toast-msg{background:#1a3c6e;color:#fff;border-radius:10px;padding:12px 18px;font-size:.83rem;margin-bottom:8px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 18px rgba(0,0,0,.2);animation:slideIn .3s ease;}
+.toast-msg.success{background:#198754;}
+.toast-msg.warning{background:#e8a020;}
+.toast-msg.danger{background:#dc3545;}
+@keyframes slideIn{from{transform:translateX(100px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+/* COURSE TAG */
+.course-tag{display:inline-block;background:#e0f0ff;color:var(--primary);border-radius:20px;padding:3px 10px;font-size:.72rem;font-weight:600;}
+
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .main{margin-left:0;}
+  .stat-row{grid-template-columns:1fr 1fr;}
+  .row-2col,.row-3col{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo-box"><i class="bi bi-qr-code"></i></div>
+    <h2>AttendQR</h2>
+    <p>IESTP Antenor Orrego Espinoza</p>
+  </div>
+  <div class="sidebar-user">
+    <div class="user-avatar" id="avatarInitials">D</div>
+    <div class="user-info">
+      <div class="name" id="sidebarName">Docente</div>
+      <div class="role-badge"><i class="bi bi-circle-fill text-warning" style="font-size:.5rem;"></i> Docente Activo</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Principal</div>
+    <div class="nav-item active" onclick="showPage('qr')"><i class="bi bi-qr-code-scan"></i> Generar QR</div>
+    <div class="nav-item" onclick="showPage('attendance')"><i class="bi bi-list-check"></i> Lista de Asistencia</div>
+    <div class="nav-item" onclick="showPage('history')"><i class="bi bi-clock-history"></i> Historial</div>
+    <div class="nav-section">Gestión</div>
+    <div class="nav-item" onclick="showPage('courses')"><i class="bi bi-journal-bookmark"></i> Mis Cursos</div>
+    <div class="nav-item" onclick="showPage('new-course')"><i class="bi bi-plus-circle"></i> Nuevo Curso</div>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="btn-logout" onclick="logout()"><i class="bi bi-box-arrow-left"></i> Cerrar Sesión</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title"><i class="bi bi-person-badge me-2" style="color:var(--accent);"></i>Panel Docente</div>
+    <div class="topbar-clock">
+      <div class="time" id="clock">--:--:--</div>
+      <div class="date-txt" id="dateDisplay">--</div>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- ====== PAGE: GENERAR QR ====== -->
+    <div class="page active" id="page-qr">
+      <h4 class="mb-3" style="font-family:Poppins,sans-serif;color:var(--primary);">Generar QR de Sesión</h4>
+      <div class="row-2col mb-4">
+        <div class="card">
+          <div class="card-title"><i class="bi bi-gear"></i> Configurar Sesión</div>
+          <div class="mb-3">
+            <label class="form-label">Curso</label>
+            <select class="form-select" id="qrCourse"><option value="">— Selecciona curso —</option></select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Sección / Turno</label>
+            <select class="form-select" id="qrSection">
+              <option value="Sección A – Mañana">Sección A – Mañana</option>
+              <option value="Sección B – Tarde">Sección B – Tarde</option>
+              <option value="Sección C – Noche">Sección C – Noche</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Tipo de Sesión</label>
+            <select class="form-select" id="qrType">
+              <option>Clase teórica</option>
+              <option>Clase práctica</option>
+              <option>Laboratorio</option>
+              <option>Evaluación</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Duración del QR (minutos)</label>
+            <select class="form-select" id="qrDuration">
+              <option value="5">5 min</option>
+              <option value="10" selected>10 min</option>
+              <option value="15">15 min</option>
+              <option value="20">20 min</option>
+              <option value="30">30 min</option>
+            </select>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn-primary-c flex-fill" onclick="generateQR()"><i class="bi bi-qr-code me-1"></i> Generar QR</button>
+            <button class="btn-outline-c" onclick="copyQRLink()" id="btnCopy" disabled><i class="bi bi-clipboard"></i> Copiar enlace</button>
+          </div>
+        </div>
+        <div class="card d-flex flex-column align-items-center justify-content-center">
+          <div class="qr-box" style="width:100%;">
+            <div id="qrCanvas" class="qr-placeholder"><i class="bi bi-qr-code"></i></div>
+            <div class="timer-ring" id="timerDisplay">--:--</div>
+            <div class="timer-label" id="timerLabel">Esperando configuración...</div>
+            <div id="sessionInfo" style="font-size:.75rem;color:var(--muted);margin-top:8px;text-align:center;display:none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== PAGE: ASISTENCIA ====== -->
+    <div class="page" id="page-attendance">
+      <h4 class="mb-3" style="font-family:Poppins,sans-serif;color:var(--primary);">Lista de Asistencia</h4>
+      <div class="card mb-3">
+        <div class="search-row">
+          <select class="filter-select" id="filterCourse" onchange="renderAttendance()"><option value="">Todos los cursos</option></select>
+          <input type="text" class="search-input" placeholder="Buscar alumno..." id="searchStudent" oninput="renderAttendance()"/>
+          <select class="filter-select" id="filterStatus" onchange="renderAttendance()">
+            <option value="">Todos los estados</option>
+            <option value="Presente">Presente</option>
+            <option value="Tardanza">Tardanza</option>
+            <option value="Ausente">Ausente</option>
+            <option value="Pendiente">Pendiente</option>
+          </select>
+          <button class="btn-success-c btn-sm-c" onclick="exportReport()"><i class="bi bi-download me-1"></i> Exportar</button>
+        </div>
+      </div>
+      <div class="stat-row" id="statRow">
+        <div class="stat-card"><div class="num num-present" id="cntPresent">0</div><div class="lbl">Presentes</div></div>
+        <div class="stat-card"><div class="num num-late" id="cntLate">0</div><div class="lbl">Tardanzas</div></div>
+        <div class="stat-card"><div class="num num-absent" id="cntAbsent">0</div><div class="lbl">Ausentes</div></div>
+        <div class="stat-card"><div class="num num-total" id="cntTotal">0</div><div class="lbl">Total nómina</div></div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table id="attendanceTable">
+            <thead><tr><th>#</th><th>Alumno</th><th>Código</th><th>Hora Registro</th><th>Estado</th></tr></thead>
+            <tbody id="attendanceTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== PAGE: HISTORIAL ====== -->
+    <div class="page" id="page-history">
+      <h4 class="mb-3" style="font-family:Poppins,sans-serif;color:var(--primary);">Historial de Sesiones</h4>
+      <div class="card mb-4">
+        <div class="search-row">
+          <select class="filter-select" id="hFilterCourse" onchange="renderHistory()"><option value="">Todos los cursos</option></select>
+          <input type="date" class="search-input" id="hFilterDate" oninput="renderHistory()" style="max-width:180px;"/>
+          <button class="btn-accent-c btn-sm-c" onclick="generateMonthlyReport()"><i class="bi bi-file-earmark-bar-graph me-1"></i> Generar reporte mensual</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Curso</th><th>Sección</th><th>Presentes</th><th>Tardanzas</th><th>Ausentes</th><th>Acciones</th></tr></thead>
+            <tbody id="historyTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== PAGE: CURSOS ====== -->
+    <div class="page" id="page-courses">
+      <h4 class="mb-3" style="font-family:Poppins,sans-serif;color:var(--primary);">Mis Cursos</h4>
+      <div class="card">
+        <div class="row-3col" id="courseGrid"></div>
+        <div id="emptyCoursesMsg" style="text-align:center;padding:40px;color:var(--muted);display:none;">
+          <i class="bi bi-journal-x" style="font-size:2.5rem;display:block;margin-bottom:10px;"></i>
+          No tienes cursos aún. <span class="link-create" onclick="showPage('new-course')" style="color:var(--primary);font-weight:600;cursor:pointer;">Crea uno nuevo</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== PAGE: NUEVO CURSO ====== -->
+    <div class="page" id="page-new-course">
+      <h4 class="mb-3" style="font-family:Poppins,sans-serif;color:var(--primary);">Crear Nuevo Curso</h4>
+      <div class="card" style="max-width:560px;">
+        <div class="card-title"><i class="bi bi-plus-circle"></i> Datos del Curso</div>
+        <div class="mb-3">
+          <label class="form-label">Nombre del Curso</label>
+          <input type="text" class="form-control" id="newCourseName" placeholder="Ej: Algoritmos y Estructura de Datos"/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Código del Curso</label>
+          <input type="text" class="form-control" id="newCourseCode" placeholder="Ej: AED-01"/>
+        </div>
+        <div class="row-2col mb-3">
+          <div>
+            <label class="form-label">Sección</label>
+            <select class="form-select" id="newCourseSection">
+              <option>Sección A – Mañana</option>
+              <option>Sección B – Tarde</option>
+              <option>Sección C – Noche</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Semestre</label>
+            <input type="text" class="form-control" id="newCourseSem" placeholder="Ej: 2026-I"/>
+          </div>
+        </div>
+        <button class="btn-primary-c" onclick="createCourse()"><i class="bi bi-save me-1"></i> Guardar Curso</button>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+<script>
+// ===== DATA =====
+const STUDENTS = [
+  {code:'EST-1', name:'BELLO MARTINEZ, SHEILA MILAGROS'},
+  {code:'EST-2', name:'BENAVIDES SALAS ANGELO RENZO'},
+  {code:'EST-3', name:'CACERES LUCERO, ADRIAN FERNANDO'},
+  {code:'EST-4', name:'CHICOMA CENTURION, GIANFRANCO SEBASTIAN'},
+  {code:'EST-5', name:'DEJO ZAMBRANO ALONSO EDUARDO OSHIRO'},
+  {code:'EST-6', name:'DELGADO HURTADO, JOSIAS CALEB'},
+  {code:'EST-7', name:'GAVILAN MEZA, ANTHONY JOEL'},
+  {code:'EST-8', name:'LOZANO MOLINA FABRIZIO RAHUL'},
+  {code:'EST-9', name:'PAUCAS PARIONA, AXEL DOMINIC'},
+  {code:'EST-10', name:'PUMA RAMIREZ, ANYI PERLA'},
+  {code:'EST-11', name:'QUIQUE BLAS, ANGIE KATHERIN'},
+  {code:'EST-12', name:'QUISPE MIRANDA, ITALO BENJAMIN'},
+  {code:'EST-13', name:'SAIRITUPAC CONDORI, RUBI GERALDINE'},
+  {code:'EST-14', name:'SILUPU FERNANDEZ, OMAR ADRIANO'},
+  {code:'EST-15', name:'SOLER LEON, SEBASTIAN ALONZO'},
+  {code:'EST-16', name:'SUCASACA VERA, CHRISTIAM ALEJANDRO MATTHEW'},
+  {code:'EST-17', name:'UMILDE JUARES, WILLIAN'},
+  {code:'EST-18', name:'UTRILLA VALQUI, URIEL ALEXANDER'},
+  {code:'EST-19', name:'VILLARREAL LAUREANO, ALVARO'},
+  {code:'EST-20', name:'ZARATE MORENO, LUIS ENRIQUE'}
+];
+
+let session = null;
+let timerInterval = null;
+let currentSession = null;
+let qrLink = '';
+
+// AUTH CHECK
+function init(){
+  session = JSON.parse(localStorage.getItem('attendqr_session')||'null');
+  if(!session||session.role!=='teacher'){window.location.href='login.html';return;}
+  document.getElementById('sidebarName').textContent = session.name||'Docente';
+  document.getElementById('avatarInitials').textContent = (session.name||'D')[0].toUpperCase();
+  loadCourseSelects();
+  renderAttendance();
+  renderHistory();
+  renderCourses();
+  startClock();
+  // check URL params for QR auto-register
+  const params = new URLSearchParams(location.search);
+  if(params.get('action')==='register'){showPage('attendance');}
+}
+
+// CLOCK
+function startClock(){
+  function tick(){
+    const n=new Date();
+    document.getElementById('clock').textContent=n.toLocaleTimeString('es-PE');
+    document.getElementById('dateDisplay').textContent=n.toLocaleDateString('es-PE',{weekday:'long',day:'2-digit',month:'long'});
+  }
+  tick(); setInterval(tick,1000);
+}
+
+// PAGES
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const map={qr:0,attendance:1,history:2,courses:3,'new-course':4};
+  document.querySelectorAll('.nav-item')[map[name]]?.classList.add('active');
+  if(name==='attendance') renderAttendance();
+  if(name==='history') renderHistory();
+  if(name==='courses') renderCourses();
+}
+
+// LOGOUT
+function logout(){localStorage.removeItem('attendqr_session');window.location.href='login.html';}
+
+// TOAST
+function toast(msg, type='info'){
+  const t=document.getElementById('toastContainer');
+  const d=document.createElement('div');
+  d.className=`toast-msg ${type}`;
+  const icons={info:'bi-info-circle',success:'bi-check-circle',warning:'bi-exclamation-triangle',danger:'bi-x-circle'};
+  d.innerHTML=`<i class="bi ${icons[type]||'bi-info-circle'}"></i>${msg}`;
+  t.appendChild(d);
+  setTimeout(()=>d.remove(),3500);
+}
+
+// STORAGE
+function getCourses(){return JSON.parse(localStorage.getItem('attendqr_courses')||'[]');}
+function saveCourses(c){localStorage.setItem('attendqr_courses',JSON.stringify(c));}
+function getAttendance(){return JSON.parse(localStorage.getItem('attendqr_attendance')||'[]');}
+function saveAttendance(a){localStorage.setItem('attendqr_attendance',JSON.stringify(a));}
+function getSessions(){return JSON.parse(localStorage.getItem('attendqr_sessions')||'[]');}
+function saveSessions(s){localStorage.setItem('attendqr_sessions',JSON.stringify(s));}
+
+function loadCourseSelects(){
+  const courses=getCourses();
+  ['qrCourse','filterCourse','hFilterCourse'].forEach(id=>{
+    const el=document.getElementById(id);
+    const first=el.options[0];
+    el.innerHTML=''; el.appendChild(first);
+    courses.forEach(c=>{
+      const o=document.createElement('option');
+      o.value=c.id; o.textContent=c.name;
+      el.appendChild(o);
+    });
+  });
+}
+
+// ===== QR GENERATION =====
+let qrObj=null;
+function generateQR(){
+  const course=document.getElementById('qrCourse').value;
+  const courseEl=document.getElementById('qrCourse');
+  const courseName=courseEl.options[courseEl.selectedIndex]?.text||'';
+  const section=document.getElementById('qrSection').value;
+  const type=document.getElementById('qrType').value;
+  const duration=parseInt(document.getElementById('qrDuration').value);
+
+  if(!course){toast('Selecciona un curso primero.','warning');return;}
+
+  if(timerInterval) clearInterval(timerInterval);
+
+  const sessionId = 'sess_'+Date.now();
+  const expiresAt = Date.now()+(duration*60*1000);
+  currentSession={id:sessionId,course,courseName,section,type,duration,expiresAt,date:new Date().toISOString()};
+
+  const baseUrl = window.location.origin+window.location.pathname.replace('docente.html','alumno.html');
+  qrLink = `${baseUrl}?action=register&session=${sessionId}&course=${encodeURIComponent(courseName)}&section=${encodeURIComponent(section)}&expires=${expiresAt}`;
+  localStorage.setItem('attendqr_active_session',JSON.stringify({...currentSession,qrLink}));
+
+  // Draw QR
+  const canvas=document.getElementById('qrCanvas');
+  canvas.innerHTML='';
+  canvas.className='';
+  canvas.style.cssText='width:200px;height:200px;display:flex;align-items:center;justify-content:center;';
+  if(qrObj){qrObj.clear();}
+  qrObj=new QRCode(canvas,{text:qrLink,width:200,height:200,colorDark:'#1a3c6e',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
+
+  document.getElementById('btnCopy').disabled=false;
+  document.getElementById('sessionInfo').style.display='block';
+  document.getElementById('sessionInfo').innerHTML=`<b>${courseName}</b> · ${section} · ${type}`;
+
+  startTimer(duration*60, expiresAt);
+  toast(`QR generado para ${courseName} – ${duration} min`,'success');
+}
+
+function startTimer(totalSecs, expiresAt){
+  function tick(){
+    const rem=Math.max(0,Math.floor((expiresAt-Date.now())/1000));
+    const m=Math.floor(rem/60); const s=rem%60;
+    const disp=document.getElementById('timerDisplay');
+    const lbl=document.getElementById('timerLabel');
+    disp.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    disp.className='timer-ring'+(rem<=60?' danger':rem<=180?' warning':'');
+    lbl.textContent=rem>0?'Tiempo restante para registrarse':'⏱ Sesión expirada';
+    if(rem===0){
+      clearInterval(timerInterval);
+      // Save session to history
+      const ss=getSessions();
+      const att=getAttendance();
+      const sessionRecords=att.filter(a=>a.sessionId===currentSession.id);
+      const present=sessionRecords.filter(a=>a.status==='Presente').length;
+      const late=sessionRecords.filter(a=>a.status==='Tardanza').length;
+      const absent=STUDENTS.length-present-late;
+      ss.push({...currentSession,present,late,absent});
+      saveSessions(ss);
+      markAbsent(currentSession.id);
+      toast('Sesión finalizada. Alumnos ausentes marcados.','warning');
+    }
+  }
+  timerInterval=setInterval(tick,1000);
+  tick();
+}
+
+function markAbsent(sessionId){
+  const att=getAttendance();
+  const registered=att.filter(a=>a.sessionId===sessionId).map(a=>a.studentCode);
+  STUDENTS.forEach(s=>{
+    if(!registered.includes(s.code)){
+      att.push({sessionId,studentCode:s.code,studentName:s.name,time:null,status:'Ausente',timestamp:Date.now()});
+    }
+  });
+  saveAttendance(att);
+  renderAttendance();
+}
+
+function copyQRLink(){
+  if(!qrLink){return;}
+  navigator.clipboard.writeText(qrLink).then(()=>toast('Enlace copiado al portapapeles','success')).catch(()=>{
+    const inp=document.createElement('input');inp.value=qrLink;document.body.appendChild(inp);inp.select();document.execCommand('copy');document.body.removeChild(inp);
+    toast('Enlace copiado','success');
+  });
+}
+
+// ===== ATTENDANCE =====
+function renderAttendance(){
+  const filterCourse=document.getElementById('filterCourse')?.value||'';
+  const search=(document.getElementById('searchStudent')?.value||'').toLowerCase();
+  const filterStatus=document.getElementById('filterStatus')?.value||'';
+  const att=getAttendance();
+
+  let rows=STUDENTS.map(s=>{
+    const record=att.filter(a=>a.studentCode===s.code&&(!filterCourse||a.sessionId&&true)).sort((a,b)=>b.timestamp-a.timestamp)[0];
+    return{code:s.code,name:s.name,time:record?.time||null,status:record?.status||'Pendiente',sessionId:record?.sessionId};
+  });
+
+  if(search) rows=rows.filter(r=>r.name.toLowerCase().includes(search)||r.code.toLowerCase().includes(search));
+  if(filterStatus) rows=rows.filter(r=>r.status===filterStatus);
+
+  const tbody=document.getElementById('attendanceTbody');
+  tbody.innerHTML=rows.map((r,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td><b>${r.name}</b></td>
+      <td><span class="course-tag">${r.code}</span></td>
+      <td>${r.time||'—'}</td>
+      <td><span class="badge-${r.status==='Presente'?'present':r.status==='Tardanza'?'late':r.status==='Ausente'?'absent':'pending'}">${r.status}</span></td>
+    </tr>`).join('');
+
+  const all=getAttendance();
+  document.getElementById('cntPresent').textContent=all.filter(a=>a.status==='Presente').length;
+  document.getElementById('cntLate').textContent=all.filter(a=>a.status==='Tardanza').length;
+  document.getElementById('cntAbsent').textContent=all.filter(a=>a.status==='Ausente').length;
+  document.getElementById('cntTotal').textContent=STUDENTS.length;
+}
+
+// ===== HISTORY =====
+function renderHistory(){
+  const ss=getSessions();
+  const filterCourse=document.getElementById('hFilterCourse')?.value||'';
+  const filterDate=document.getElementById('hFilterDate')?.value||'';
+  let rows=ss;
+  if(filterCourse) rows=rows.filter(s=>s.course===filterCourse);
+  if(filterDate) rows=rows.filter(s=>s.date&&s.date.startsWith(filterDate));
+
+  const tbody=document.getElementById('historyTbody');
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px;">Sin sesiones registradas aún</td></tr>';return;}
+  tbody.innerHTML=rows.map(s=>`
+    <tr>
+      <td>${new Date(s.date).toLocaleDateString('es-PE')}</td>
+      <td><b>${s.courseName}</b></td>
+      <td>${s.section}</td>
+      <td style="color:var(--success);font-weight:700;">${s.present||0}</td>
+      <td style="color:var(--warning);font-weight:700;">${s.late||0}</td>
+      <td style="color:var(--danger);font-weight:700;">${s.absent||0}</td>
+      <td><button class="btn-outline-c btn-sm-c" onclick="viewSession('${s.id}')"><i class="bi bi-eye"></i> Ver</button></td>
+    </tr>`).join('');
+}
+
+function viewSession(id){
+  showPage('attendance');
+  // Could filter by session, for now shows all
+  toast('Mostrando asistencia de la sesión','info');
+}
+
+function generateMonthlyReport(){
+  const ss=getSessions();
+  if(!ss.length){toast('No hay sesiones para reportar','warning');return;}
+  let csv='Fecha,Curso,Sección,Tipo,Presentes,Tardanzas,Ausentes\n';
+  ss.forEach(s=>{
+    csv+=`${new Date(s.date).toLocaleDateString('es-PE')},${s.courseName},${s.section},${s.type},${s.present||0},${s.late||0},${s.absent||0}\n`;
+  });
+  downloadCSV(csv,'reporte_mensual.csv');
+  toast('Reporte mensual generado','success');
+}
+
+// ===== EXPORT =====
+function exportReport(){
+  const att=getAttendance();
+  let csv='Código,Nombre,Hora Registro,Estado\n';
+  STUDENTS.forEach(s=>{
+    const rec=att.filter(a=>a.studentCode===s.code).sort((a,b)=>b.timestamp-a.timestamp)[0];
+    csv+=`${s.code},"${s.name}",${rec?.time||'—'},${rec?.status||'Pendiente'}\n`;
+  });
+  downloadCSV(csv,'reporte_asistencia.csv');
+  toast('Reporte descargado','success');
+}
+
+function downloadCSV(csv,filename){
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);
+}
+
+// ===== COURSES =====
+function createCourse(){
+  const name=document.getElementById('newCourseName').value.trim();
+  const code=document.getElementById('newCourseCode').value.trim();
+  const section=document.getElementById('newCourseSection').value;
+  const sem=document.getElementById('newCourseSem').value.trim();
+  if(!name||!code){toast('Completa nombre y código del curso','warning');return;}
+  const courses=getCourses();
+  courses.push({id:'c'+Date.now(),name,code,section,sem,createdAt:new Date().toISOString()});
+  saveCourses(courses);
+  toast(`Curso "${name}" creado exitosamente`,'success');
+  document.getElementById('newCourseName').value='';
+  document.getElementById('newCourseCode').value='';
+  document.getElementById('newCourseSem').value='';
+  loadCourseSelects();
+  renderCourses();
+  showPage('courses');
+}
+
+function renderCourses(){
+  const courses=getCourses();
+  const grid=document.getElementById('courseGrid');
+  const empty=document.getElementById('emptyCoursesMsg');
+  if(!courses.length){grid.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  grid.innerHTML=courses.map(c=>`
+    <div class="card" style="margin:0;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;">
+        <div style="background:linear-gradient(135deg,var(--primary),#2563b0);width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2rem;"><i class="bi bi-journal-bookmark"></i></div>
+        <span class="course-tag">${c.code}</span>
+      </div>
+      <div style="font-weight:700;font-size:.9rem;color:var(--text);margin-bottom:4px;">${c.name}</div>
+      <div style="font-size:.75rem;color:var(--muted);">${c.section}</div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:2px;">${c.sem||''}</div>
+      <div style="margin-top:12px;display:flex;gap:6px;">
+        <button class="btn-primary-c btn-sm-c flex-fill" onclick="selectCourseAndQR('${c.id}')"><i class="bi bi-qr-code me-1"></i>QR</button>
+        <button class="btn-outline-c btn-sm-c" onclick="deleteCourse('${c.id}')"><i class="bi bi-trash"></i></button>
+      </div>
+    </div>`).join('');
+}
+
+function selectCourseAndQR(id){
+  document.getElementById('qrCourse').value=id;
+  showPage('qr');
+}
+
+function deleteCourse(id){
+  if(!confirm('¿Eliminar este curso?'))return;
+  let c=getCourses().filter(x=>x.id!==id);
+  saveCourses(c); loadCourseSelects(); renderCourses();
+  toast('Curso eliminado','danger');
+}
+
+// PRELOAD DEFAULT COURSES
+function preloadCourses(){
+  if(getCourses().length===0){
+    const defaults=[
+      {id:'c1',name:'Algoritmos y Estructura de Datos',code:'AED-01',section:'Sección A – Mañana',sem:'2026-I',createdAt:new Date().toISOString()},
+      {id:'c2',name:'Herramientas Multimedia SAD',code:'HMS-01',section:'Sección A – Mañana',sem:'2026-I',createdAt:new Date().toISOString()},
+      {id:'c3',name:'Programación Web',code:'PWB-01',section:'Sección B – Tarde',sem:'2026-I',createdAt:new Date().toISOString()},
+    ];
+    saveCourses(defaults);
+  }
+}
+
+// Check for incoming QR student registration
+function checkIncomingRegistration(){
+  const params=new URLSearchParams(location.search);
+  if(params.get('studentCode')){
+    const code=params.get('studentCode');
+    const name=params.get('studentName');
+    const sessionId=params.get('session');
+    const expires=parseInt(params.get('expires')||'0');
+    const now=Date.now();
+    const status=now>expires?'Tardanza':'Presente';
+    const time=new Date().toLocaleTimeString('es-PE');
+    const att=getAttendance();
+    if(!att.find(a=>a.studentCode===code&&a.sessionId===sessionId)){
+      att.push({sessionId,studentCode:code,studentName:name,time,status,timestamp:now});
+      saveAttendance(att);
+      renderAttendance();
+      toast(`${name} marcó asistencia como ${status}`,'success');
+    }
+    // Clean URL
+    window.history.replaceState({},'',location.pathname);
+    showPage('attendance');
+  }
+}
+
+preloadCourses();
+init();
+checkIncomingRegistration();
+</script>
+</body>
+</html>

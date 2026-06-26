@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Registro de Asistencia – AttendQR</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@700;800&display=swap');
+:root{
+  --primary:#1a3c6e;--accent:#e8a020;--light-bg:#f0f4fa;
+  --card:#fff;--border:#dde3f0;--text:#1a2540;--muted:#6b7a99;
+  --success:#198754;--danger:#dc3545;--warning:#e8a020;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--light-bg);min-height:100vh;display:flex;flex-direction:column;}
+
+/* HEADER */
+.site-header{background:var(--primary);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(0,0,0,.25);}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand-icon{width:42px;height:42px;background:var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;}
+.brand-text h1{font-family:'Poppins',sans-serif;font-size:1rem;color:#fff;margin:0;}
+.brand-text p{font-size:.68rem;color:rgba(255,255,255,.6);margin:0;}
+.header-clock{text-align:right;}
+.header-clock .time{font-size:1.3rem;font-weight:700;color:var(--accent);}
+.header-clock .date-txt{font-size:.7rem;color:rgba(255,255,255,.6);}
+
+/* LAYOUT */
+.content-wrap{max-width:800px;margin:0 auto;padding:28px 16px 50px;}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:0 4px 24px rgba(26,60,110,.08);margin-bottom:24px;}
+.card-title{font-family:'Poppins',sans-serif;font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+
+/* SESSION BANNER */
+.session-banner{border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:24px;}
+.session-banner.active{background:linear-gradient(135deg,#d4edda,#c3e6cb);border:1.5px solid #b8dacc;}
+.session-banner.expired{background:linear-gradient(135deg,#f8d7da,#f5c6cb);border:1.5px solid #f1aeb5;}
+.session-banner.waiting{background:linear-gradient(135deg,#e0f0ff,#cce4f8);border:1.5px solid #b3d4f0;}
+.session-banner .icon{font-size:2rem;}
+.session-banner .info h5{font-weight:700;font-size:.95rem;margin:0;}
+.session-banner .info p{font-size:.8rem;margin:0;opacity:.8;}
+
+/* TIMER */
+.timer-box{text-align:center;padding:20px;background:#f8faff;border-radius:14px;border:2px solid var(--border);margin-bottom:20px;}
+.timer-ring{font-family:'Poppins',sans-serif;font-size:3.5rem;font-weight:800;color:var(--primary);line-height:1;}
+.timer-ring.warning{color:var(--warning);}
+.timer-ring.danger{color:var(--danger);}
+.timer-sublabel{font-size:.8rem;color:var(--muted);margin-top:6px;}
+.progress-bar-wrap{height:8px;background:#e9eef8;border-radius:10px;overflow:hidden;margin-top:12px;}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--primary),#2563b0);border-radius:10px;transition:width .9s linear;}
+.progress-bar-fill.warning-fill{background:linear-gradient(90deg,var(--warning),#f0b840);}
+.progress-bar-fill.danger-fill{background:linear-gradient(90deg,var(--danger),#e45464);}
+
+/* FORM */
+.form-label{font-size:.8rem;font-weight:600;color:var(--text);margin-bottom:4px;}
+.form-control,.form-select{border:1.5px solid var(--border);border-radius:9px;padding:10px 14px;font-size:.88rem;transition:border-color .2s;}
+.form-control:focus,.form-select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,60,110,.1);outline:none;}
+.btn-register{background:linear-gradient(135deg,var(--primary),#2563b0);color:#fff;border:none;border-radius:12px;padding:14px;font-weight:700;font-size:1rem;width:100%;cursor:pointer;transition:transform .15s,box-shadow .15s;}
+.btn-register:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(26,60,110,.3);}
+.btn-register:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;}
+
+/* STATUS */
+.status-box{text-align:center;padding:30px 20px;border-radius:16px;}
+.status-box.success{background:linear-gradient(135deg,#d4edda,#c3e6cb);}
+.status-box.late{background:linear-gradient(135deg,#fff3cd,#ffeaa7);}
+.status-box.error{background:linear-gradient(135deg,#f8d7da,#f5c6cb);}
+.status-icon{font-size:3.5rem;margin-bottom:12px;}
+.status-box h4{font-family:'Poppins',sans-serif;font-weight:800;font-size:1.2rem;margin-bottom:6px;}
+.status-box p{font-size:.85rem;opacity:.85;margin:0;}
+.badge-pill{display:inline-block;border-radius:20px;padding:4px 14px;font-size:.78rem;font-weight:700;margin-top:10px;}
+.badge-present{background:#198754;color:#fff;}
+.badge-late{background:#e8a020;color:#fff;}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.83rem;}
+thead th{background:#f4f7fb;color:var(--primary);font-weight:700;padding:9px 12px;text-align:left;font-size:.73rem;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid var(--border);}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tbody tr:hover{background:#fafbff;}
+
+.stat-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.stat-c{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;}
+.stat-c .num{font-family:'Poppins',sans-serif;font-size:1.7rem;font-weight:800;}
+.stat-c .lbl{font-size:.68rem;color:var(--muted);font-weight:600;text-transform:uppercase;}
+.search-row{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.search-input{flex:1;min-width:160px;border:1.5px solid var(--border);border-radius:9px;padding:8px 12px;font-size:.82rem;}
+
+/* NAV BOTTOM (mobile) */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);padding:6px 0;z-index:100;}
+.bottom-nav-items{display:flex;justify-content:space-around;}
+.bnav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;padding:6px 12px;color:var(--muted);font-size:.65rem;cursor:pointer;}
+.bnav-btn.active{color:var(--primary);}
+.bnav-btn i{font-size:1.2rem;}
+@media(max-width:600px){.bottom-nav{display:block;}.content-wrap{padding-bottom:80px;}.stat-strip{grid-template-columns:1fr 1fr;}}
+
+.footer{background:var(--primary);color:rgba(255,255,255,.6);text-align:center;padding:12px;font-size:.72rem;margin-top:auto;}
+.footer span{color:var(--accent);}
+.page{display:none;}.page.active{display:block;}
+.tab-nav{display:flex;background:#f4f7fb;border-radius:12px;padding:4px;margin-bottom:20px;gap:4px;}
+.tab-btn{flex:1;padding:9px;background:none;border:none;border-radius:9px;font-size:.8rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s;}
+.tab-btn.active{background:var(--primary);color:#fff;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="brand">
+    <div class="brand-icon"><i class="bi bi-qr-code"></i></div>
+    <div class="brand-text">
+      <h1>AttendQR – Alumno</h1>
+      <p>IESTP Antenor Orrego Espinoza</p>
+    </div>
+  </div>
+  <div class="header-clock">
+    <div class="time" id="clock">--:--:--</div>
+    <div class="date-txt" id="dateDisplay">--</div>
+  </div>
+</header>
+
+<div class="content-wrap">
+
+  <!-- TAB NAV -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('register')"><i class="bi bi-pencil-square me-1"></i>Registrar</button>
+    <button class="tab-btn" onclick="switchTab('list')"><i class="bi bi-list-check me-1"></i>Lista</button>
+    <button class="tab-btn" onclick="switchTab('profile')"><i class="bi bi-person-circle me-1"></i>Mi Perfil</button>
+  </div>
+
+  <!-- ===== TAB: REGISTRAR ===== -->
+  <div class="page active" id="tab-register">
+
+    <!-- SESSION BANNER -->
+    <div class="session-banner waiting" id="sessionBanner">
+      <div class="icon">📋</div>
+      <div class="info">
+        <h5>Sin sesión activa</h5>
+        <p>Escanea el QR del docente o usa el enlace proporcionado</p>
+      </div>
+    </div>
+
+    <!-- TIMER -->
+    <div class="timer-box" id="timerBox" style="display:none;">
+      <div class="timer-ring" id="timerDisplay">--:--</div>
+      <div class="timer-sublabel" id="timerLabel">Tiempo restante para registrarse</div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:100%;"></div></div>
+    </div>
+
+    <!-- FORM -->
+    <div class="card" id="regForm">
+      <div class="card-title"><i class="bi bi-person-check"></i> Registrar mi Asistencia</div>
+      <div class="mb-3">
+        <label class="form-label">Tu Código de Alumno</label>
+        <select class="form-select" id="stuCode">
+          <option value="">— Selecciona tu código —</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Nombre</label>
+        <input type="text" class="form-control" id="stuName" readonly placeholder="Se completará automáticamente"/>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Sesión / Curso</label>
+        <input type="text" class="form-control" id="sessionCourse" readonly placeholder="Cargando desde QR..."/>
+      </div>
+      <button class="btn-register" id="btnRegister" onclick="doRegister()">
+        <i class="bi bi-check-circle me-2"></i> Marcar Asistencia
+      </button>
+    </div>
+
+    <!-- SUCCESS/RESULT -->
+    <div id="resultBox" style="display:none;"></div>
+
+  </div>
+
+  <!-- ===== TAB: LISTA ===== -->
+  <div class="page" id="tab-list">
+    <div class="stat-strip">
+      <div class="stat-c"><div class="num" style="color:var(--success);" id="lPresent">0</div><div class="lbl">Presentes</div></div>
+      <div class="stat-c"><div class="num" style="color:var(--warning);" id="lLate">0</div><div class="lbl">Tardanzas</div></div>
+      <div class="stat-c"><div class="num" style="color:var(--danger);" id="lAbsent">0</div><div class="lbl">Ausentes</div></div>
+    </div>
+    <div class="card">
+      <div class="search-row">
+        <input type="text" class="search-input" placeholder="Buscar alumno..." id="listSearch" oninput="renderList()"/>
+        <select class="form-select" style="max-width:160px;border:1.5px solid var(--border);border-radius:9px;padding:8px 12px;font-size:.82px;" id="listFilter" onchange="renderList()">
+          <option value="">Todos</option>
+          <option value="Presente">Presente</option>
+          <option value="Tardanza">Tardanza</option>
+          <option value="Ausente">Ausente</option>
+          <option value="Pendiente">Pendiente</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Alumno</th><th>Código</th><th>Hora</th><th>Estado</th></tr></thead>
+          <tbody id="listTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB: PERFIL ===== -->
+  <div class="page" id="tab-profile">
+    <div class="card">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#2563b0);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;margin:0 auto 12px;font-weight:800;" id="profileAvatar">?</div>
+        <h5 style="font-family:Poppins,sans-serif;color:var(--primary);margin:0;" id="profileName">—</h5>
+        <p style="font-size:.8rem;color:var(--muted);" id="profileCode">—</p>
+      </div>
+      <div style="background:#f4f7fb;border-radius:12px;padding:16px;">
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:.83rem;">
+          <span style="color:var(--muted);">Correo</span><span style="font-weight:600;" id="profileEmail">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:.83rem;">
+          <span style="color:var(--muted);">Registrado</span><span style="font-weight:600;" id="profileDate">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:.83rem;">
+          <span style="color:var(--muted);">Asistencias</span><span style="font-weight:600;color:var(--success);" id="profileAttCount">0</span>
+        </div>
+      </div>
+      <button class="btn-register mt-4" style="background:linear-gradient(135deg,#dc3545,#e45464);" onclick="logout()">
+        <i class="bi bi-box-arrow-left me-2"></i> Cerrar Sesión
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<footer class="footer">© 2026 AttendQR — <span>IESTP Antenor Orrego Espinoza</span></footer>
+
+<script>
+const STUDENTS = [
+  {code:'EST-1', name:'BELLO MARTINEZ, SHEILA MILAGROS'},
+  {code:'EST-2', name:'BENAVIDES SALAS ANGELO RENZO'},
+  {code:'EST-3', name:'CACERES LUCERO, ADRIAN FERNANDO'},
+  {code:'EST-4', name:'CHICOMA CENTURION, GIANFRANCO SEBASTIAN'},
+  {code:'EST-5', name:'DEJO ZAMBRANO ALONSO EDUARDO OSHIRO'},
+  {code:'EST-6', name:'DELGADO HURTADO, JOSIAS CALEB'},
+  {code:'EST-7', name:'GAVILAN MEZA, ANTHONY JOEL'},
+  {code:'EST-8', name:'LOZANO MOLINA FABRIZIO RAHUL'},
+  {code:'EST-9', name:'PAUCAS PARIONA, AXEL DOMINIC'},
+  {code:'EST-10', name:'PUMA RAMIREZ, ANYI PERLA'},
+  {code:'EST-11', name:'QUIQUE BLAS, ANGIE KATHERIN'},
+  {code:'EST-12', name:'QUISPE MIRANDA, ITALO BENJAMIN'},
+  {code:'EST-13', name:'SAIRITUPAC CONDORI, RUBI GERALDINE'},
+  {code:'EST-14', name:'SILUPU FERNANDEZ, OMAR ADRIANO'},
+  {code:'EST-15', name:'SOLER LEON, SEBASTIAN ALONZO'},
+  {code:'EST-16', name:'SUCASACA VERA, CHRISTIAM ALEJANDRO MATTHEW'},
+  {code:'EST-17', name:'UMILDE JUARES, WILLIAN'},
+  {code:'EST-18', name:'UTRILLA VALQUI, URIEL ALEXANDER'},
+  {code:'EST-19', name:'VILLARREAL LAUREANO, ALVARO'},
+  {code:'EST-20', name:'ZARATE MORENO, LUIS ENRIQUE'}
+];
+
+let session = null;
+let activeQRSession = null;
+let timerInterval = null;
+
+// Populate student select
+const sel = document.getElementById('stuCode');
+STUDENTS.forEach(s=>{
+  const o=document.createElement('option');o.value=s.code;o.textContent=s.code+' – '+s.name;sel.appendChild(o);
+});
+sel.addEventListener('change',function(){
+  const found=STUDENTS.find(s=>s.code===this.value);
+  document.getElementById('stuName').value=found?found.name:'';
+});
+
+// INIT
+function init(){
+  session=JSON.parse(localStorage.getItem('attendqr_session')||'null');
+  if(!session||session.role!=='student'){window.location.href='login.html';return;}
+  loadProfile();
+  startClock();
+  checkURLParams();
+  checkActiveSession();
+  renderList();
+}
+
+function startClock(){
+  function tick(){
+    const n=new Date();
+    document.getElementById('clock').textContent=n.toLocaleTimeString('es-PE');
+    document.getElementById('dateDisplay').textContent=n.toLocaleDateString('es-PE',{weekday:'short',day:'2-digit',month:'short'});
+  }
+  tick();setInterval(tick,1000);
+}
+
+function loadProfile(){
+  document.getElementById('profileName').textContent=session.name||'—';
+  document.getElementById('profileCode').textContent=session.code||'—';
+  document.getElementById('profileEmail').textContent=session.email||'—';
+  document.getElementById('profileDate').textContent=session.registeredAt?new Date(session.registeredAt).toLocaleDateString('es-PE'):'—';
+  document.getElementById('profileAvatar').textContent=(session.name||'?')[0].toUpperCase();
+  const att=getAttendance();
+  document.getElementById('profileAttCount').textContent=att.filter(a=>a.studentCode===session.code&&a.status==='Presente').length;
+  // Pre-fill student code
+  document.getElementById('stuCode').value=session.code||'';
+  if(session.code){
+    const found=STUDENTS.find(s=>s.code===session.code);
+    document.getElementById('stuName').value=found?found.name:'';
+  }
+}
+
+// CHECK URL PARAMS (from QR link)
+function checkURLParams(){
+  const p=new URLSearchParams(location.search);
+  if(p.get('action')==='register'){
+    const sessId=p.get('session');
+    const course=p.get('course')||'';
+    const section=p.get('section')||'';
+    const expires=parseInt(p.get('expires')||'0');
+    if(sessId&&expires){
+      activeQRSession={id:sessId,course,section,expires};
+      localStorage.setItem('attendqr_active_session',JSON.stringify({
+        id:sessId,courseName:course,section,expiresAt:expires,qrLink:location.href
+      }));
+      document.getElementById('sessionCourse').value=course+' · '+section;
+      updateSessionBanner(sessId,course,section,expires);
+      startStudentTimer(expires);
+      window.history.replaceState({},'',location.pathname);
+    }
+  }
+}
+
+function checkActiveSession(){
+  const saved=JSON.parse(localStorage.getItem('attendqr_active_session')||'null');
+  if(saved&&saved.expiresAt>Date.now()-60000){
+    activeQRSession={id:saved.id,course:saved.courseName,section:saved.section,expires:saved.expiresAt};
+    document.getElementById('sessionCourse').value=(saved.courseName||'')+' · '+(saved.section||'');
+    updateSessionBanner(saved.id,saved.courseName,saved.section,saved.expiresAt);
+    if(saved.expiresAt>Date.now()) startStudentTimer(saved.expiresAt);
+    else setBannerExpired();
+  }
+}
+
+function updateSessionBanner(id,course,section,expires){
+  const banner=document.getElementById('sessionBanner');
+  const now=Date.now();
+  if(now>expires){setBannerExpired();return;}
+  banner.className='session-banner active';
+  banner.innerHTML=`
+    <div class="icon">✅</div>
+    <div class="info">
+      <h5>${course}</h5>
+      <p>${section} · Sesión activa – regístrate antes que expire</p>
+    </div>`;
+  document.getElementById('timerBox').style.display='block';
+}
+
+function setBannerExpired(){
+  const banner=document.getElementById('sessionBanner');
+  banner.className='session-banner expired';
+  banner.innerHTML=`<div class="icon">⏱</div><div class="info"><h5>Sesión expirada</h5><p>El tiempo de registro ha terminado. Tu asistencia puede contar como tardanza.</p></div>`;
+}
+
+function startStudentTimer(expiresAt){
+  const totalSecs=Math.max(0,Math.floor((expiresAt-Date.now())/1000));
+  if(timerInterval) clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{
+    const rem=Math.max(0,Math.floor((expiresAt-Date.now())/1000));
+    const m=Math.floor(rem/60);const s=rem%60;
+    const disp=document.getElementById('timerDisplay');
+    const prog=document.getElementById('progressBar');
+    disp.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    const pct=Math.max(0,(rem/totalSecs)*100);
+    prog.style.width=pct+'%';
+    if(rem<=60){disp.className='timer-ring danger';prog.className='progress-bar-fill danger-fill';}
+    else if(rem<=180){disp.className='timer-ring warning';prog.className='progress-bar-fill warning-fill';}
+    if(rem===0){clearInterval(timerInterval);setBannerExpired();document.getElementById('timerLabel').textContent='⏱ Tiempo expirado';}
+  },1000);
+}
+
+// REGISTER
+function doRegister(){
+  const code=document.getElementById('stuCode').value;
+  const name=document.getElementById('stuName').value;
+  if(!code||!name){showResult('error','Selecciona tu código de alumno para continuar.');return;}
+  if(!activeQRSession){showResult('error','No hay sesión activa. Pide al docente que genere el QR.');return;}
+
+  const att=getAttendance();
+  const already=att.find(a=>a.studentCode===code&&a.sessionId===activeQRSession.id);
+  if(already){showResult('error','Ya registraste tu asistencia en esta sesión.');return;}
+
+  const now=Date.now();
+  const status=now>activeQRSession.expires?'Tardanza':'Presente';
+  const time=new Date().toLocaleTimeString('es-PE');
+  att.push({sessionId:activeQRSession.id,studentCode:code,studentName:name,time,status,timestamp:now});
+  saveAttendance(att);
+
+  // Also notify docente panel via localStorage event
+  localStorage.setItem('attendqr_new_register',JSON.stringify({code,name,status,time,sessionId:activeQRSession.id,t:now}));
+
+  showResult(status==='Presente'?'success':'late',
+    `<div class="status-icon">${status==='Presente'?'✅':'⚠️'}</div>
+     <h4>${status==='Presente'?'¡Asistencia registrada!':'Tardanza registrada'}</h4>
+     <p>${name}</p>
+     <p style="font-size:.78rem;margin-top:4px;">${activeQRSession.course} · ${time}</p>
+     <span class="badge-pill ${status==='Presente'?'badge-present':'badge-late'}">${status}</span>`
+  );
+  document.getElementById('btnRegister').disabled=true;
+  renderList();
+}
+
+function showResult(type,html){
+  const box=document.getElementById('resultBox');
+  box.style.display='block';
+  box.innerHTML=`<div class="status-box ${type} text-center">${html}</div>`;
+  box.scrollIntoView({behavior:'smooth'});
+}
+
+// LIST
+function getAttendance(){return JSON.parse(localStorage.getItem('attendqr_attendance')||'[]');}
+function saveAttendance(a){localStorage.setItem('attendqr_attendance',JSON.stringify(a));}
+
+function renderList(){
+  const att=getAttendance();
+  const search=(document.getElementById('listSearch')?.value||'').toLowerCase();
+  const filter=document.getElementById('listFilter')?.value||'';
+  let rows=STUDENTS.map(s=>{
+    const rec=att.filter(a=>a.studentCode===s.code).sort((a,b)=>b.timestamp-a.timestamp)[0];
+    return{code:s.code,name:s.name,time:rec?.time||null,status:rec?.status||'Pendiente'};
+  });
+  if(search) rows=rows.filter(r=>r.name.toLowerCase().includes(search)||r.code.toLowerCase().includes(search));
+  if(filter) rows=rows.filter(r=>r.status===filter);
+
+  const tbody=document.getElementById('listTbody');
+  tbody.innerHTML=rows.map((r,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td style="font-weight:600;font-size:.82rem;">${r.name}</td>
+      <td><span style="background:#e0f0ff;color:#1a3c6e;border-radius:20px;padding:2px 9px;font-size:.7rem;font-weight:700;">${r.code}</span></td>
+      <td style="font-size:.8rem;">${r.time||'—'}</td>
+      <td><span style="${badgeStyle(r.status)}">${r.status}</span></td>
+    </tr>`).join('');
+
+  document.getElementById('lPresent').textContent=att.filter(a=>a.status==='Presente').length;
+  document.getElementById('lLate').textContent=att.filter(a=>a.status==='Tardanza').length;
+  document.getElementById('lAbsent').textContent=att.filter(a=>a.status==='Ausente').length;
+}
+
+function badgeStyle(s){
+  const map={Presente:'background:#d4edda;color:#155724;',Tardanza:'background:#fff3cd;color:#856404;',Ausente:'background:#f8d7da;color:#721c24;',Pendiente:'background:#e2e3e5;color:#383d41;'};
+  return (map[s]||map.Pendiente)+'border-radius:20px;padding:3px 10px;font-size:.7rem;font-weight:700;';
+}
+
+// TAB SWITCH
+function switchTab(t){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  const idx={register:0,list:1,profile:2};
+  document.querySelectorAll('.tab-btn')[idx[t]].classList.add('active');
+  if(t==='list') renderList();
+}
+
+function logout(){localStorage.removeItem('attendqr_session');window.location.href='login.html';}
+
+// Listen for storage changes (from docente panel in same browser)
+window.addEventListener('storage',function(e){
+  if(e.key==='attendqr_active_session') checkActiveSession();
+  if(e.key==='attendqr_attendance') renderList();
+});
+
+init();
+</script>
+</body>
+</html>
